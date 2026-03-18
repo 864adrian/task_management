@@ -22,6 +22,7 @@ const lista = [
 ]
 
 app.get("/api/tareas", (req, res) => {
+    console.log('received')
    res.json(lista.map(t => {
         return {id: t.id, 
             nombre: t.nombre, 
@@ -38,10 +39,10 @@ app.get("/api/tareas/:id", (req, res) => {
     if (tarea == null)
         res.status(404).json({error: 'No se ha encontrado la tarea'})
 
-    /*const n = {...t}
-    n.deadline = n.deadline == null ? null : new Date(n.deadline)*/
+    const newT = {...tarea}
+    newT.deadline = new Date(newT.deadline).toISOString().split('T')[0]
 
-    res.json(tarea)
+    res.json(newT)
 })
 
 app.post('/api/tareas', (req, res) => {
