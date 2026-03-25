@@ -2,6 +2,9 @@
 
 import express from "express";
 import cors from 'cors'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+const JWT_SECRET = 'clave_secreta_servidor'
 
 import { PrismaClient } from '@prisma/client'
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
@@ -100,28 +103,34 @@ app.post('/api/auth/login', async (req, res) => {
     if (u == null)
         return res.status(404).json({error: 'Usuario desconocido'})
 
-    if (u.password != req.body.password)
+    const esValida = await bcrypt.compare(req.body.password, u.password)
+    if (!esValida)
         return res.status(401).json({error: 'Credenciales incorrectas'})
 
-    return res.json({ok: true})
+    const token = jwt.sign(
+        { id: u.id, email: u.email }, // los datos que queremos guardar en el token
+        JWT_SECRET, // la clave de firma
+        { expiresIn: '1h' } // cuándo expira el token
+    )
 
+    return res.json({token: token})
 })
 
 app.post('/api/auth/registro', async (req, res) => {
-    
     const user = await prisma.usuario.findUnique({
         where: {
             email: req.body.email
         }
     })
-
     if (user != null)
         return res.status(400).json({error: 'Ya existe el usuario'})
     
+    const passCifrada = await bcrypt.hash(req.body.password, 10)
+
     const u = await prisma.usuario.create({
         data: {
             email: req.body.email,
-            password: req.body.password
+            password: passCifrada
         }
     })
 
