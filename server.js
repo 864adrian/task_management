@@ -3,8 +3,8 @@ import express from "express";
 import cors from 'cors'
 import authMiddleware from "./authMiddleware.js";
 
-import authRouter from "./authRouter.js";
-import taskRouter from "./taskRouter.js";
+import authRouter from "./routes/authRouter.js";
+import taskRouter from "./routes/taskRouter.js";
 
 const app = express();
 app.use(express.json());
